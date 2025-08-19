@@ -15,17 +15,19 @@ DB_CONFIG = {
     'port': 5432
 }
 
-app.config.update(
+"""app.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PORT=587,
     MAIL_USE_TLS=True,
-    MAIL_USERNAME='uhlricwymer@gmail.com',
-    MAIL_PASSWORD= 'zfxhyuctebncoxse',
-    MAIL_DEFAULT_SENDER='uhlricwymer@gmail.com'
-)
+    MAIL_USERNAME='',
+    MAIL_PASSWORD= '',
+    MAIL_DEFAULT_SENDER=''
+)"""
+
+SERIAL_KEY = os.environ.get("SERIAL_KEY", "dev-secret-key")
 
 mail = Mail(app)
-serializer = URLSafeTimedSerializer("m9K8qT2k3u4xF6vB0aZ1nY5cR7sW8pLq")
+serializer = URLSafeTimedSerializer(SERIAL_KEY)
 
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
@@ -65,13 +67,13 @@ def create_account():
         cur.close()
         conn.close()
         # creates url for verification
-        verify_url = f"http:localhost:5000/verify_email/{token}"
+        # verify_url = f"http:localhost:5000/verify_email/{token}"
         # generates email header
-        msg = Message("Verify Your Email", recipients = [email])
+        # msg = Message("Verify Your Email", recipients = [email])
         # generates the email body
-        msg.body = f"HI {username}, \n\nPlease verify your email by clicking the following link:\n{verify_url}\n\nThis link expires in 15 minutes."
+        # msg.body = f"HI {username}, \n\nPlease verify your email by clicking the following link:\n{verify_url}\n\nThis link expires in 15 minutes."
         # sends the verification email to the email that was provided for account creation
-        mail.send(msg)
+        # mail.send(msg)
         # returns a success response and the user id.
         return jsonify({'message': 'Account created successfully', 'user_id': user_id}), 201
     # the exception incase there is an issue connecting to the database, returning the appropriate error code
@@ -79,29 +81,30 @@ def create_account():
         print(str(e))
         return jsonify({'error': str(e)}), 500
 
-@app.route('/verify_email/<token>', methods=['GET'])
+"""@app.route('/verify_email/<token>', methods=['GET'])
 def verify_email(token):
     try:
+        # loads the token and checks in 15 minutes have passed since sending it
         email = serializer.loads(token, salt='email-confirm', max_age=900)
     except Exception:
+        # sends error if the token is incorrect or if the token is expired
         return jsonify({'error': 'Invalid or expired token'}), 400
     try:
-        print("attemping connection")
+        # connecting to database
         conn = get_db_connection()
-        print("first part of conection successful setting up cur")
         cur = conn.cursor()
-        print("cur successful executing update")
+        # marking that the profile has been updated
         cur.execute("UPDATE users SET email_verified = TRUE WHERE email = %s", (email,))
-        print("commiting")
         conn.commit()
-        print("closing cur")
+        # closing the database connection
         cur.close()
-        print("closing conn")
         conn.close()
+        # notifies the caller that no issues have occured
         return jsonify({'message': 'Email verified successfully!'}), 200
+    # if any issues arise with using the database then an exception is thrown and the system is made aware
     except Exception as e:
         print(e)
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500"""
 
 if __name__ == '__main__':
     app.run(debug=True)
