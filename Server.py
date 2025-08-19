@@ -80,6 +80,31 @@ def create_account():
     except Exception as e:
         print(str(e))
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/log_in', methods=['POST'])
+def log_in():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    if not password or not username:
+        return jsonify({'error': 'Missing required fields'}), 400
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, password_hash FROM users WHERE username = %s", (username))
+        user = cur.fetchone()
+        cur.close()
+        conn.close()
+        if not user:
+            return jsonify({'error': 'Invalid username or password'}), 401
+        user_id, stored_hash = user
+        if bcrypt.checkpw(password.encode('utf-8'), stored_hash.tobytes()):
+            return jsonify({'message': 'Login successful', 'user_id': user_id}),
+        else:
+            return jsonify({'error': 'Invalid username or password'}), 401
+    except Exception as e:
+        print("Login error:", str(e))
+        return jsonify({'error': str(e)}), 500
 
 """@app.route('/verify_email/<token>', methods=['GET'])
 def verify_email(token):
