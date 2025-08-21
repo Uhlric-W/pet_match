@@ -59,7 +59,7 @@ def create_account():
         cur.execute("""
             INSERT INTO users (username, email, password_hash, verification_token, email_verified)
             VALUES (%s, %s, %s, %s, %s) RETURNING id
-        """, (username, email, pass_hash, token, False))       
+        """, (username, email, pass_hash.decode('utf-8'), token, False))       
         # retrieves user id of the newly created account
         user_id = cur.fetchone()[0]
         # closes database connection
@@ -81,8 +81,8 @@ def create_account():
         print(str(e))
         return jsonify({'error': str(e)}), 500
     
-@app.route('/log_in', methods=['POST'])
-def log_in():
+@app.route('/login', methods=['POST'])
+def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -91,15 +91,17 @@ def log_in():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT id, password_hash FROM users WHERE username = %s", (username))
+        cur.execute("SELECT id, password_hash FROM users WHERE username = %s", (username,))
         user = cur.fetchone()
         cur.close()
         conn.close()
         if not user:
             return jsonify({'error': 'Invalid username or password'}), 401
         user_id, stored_hash = user
-        if bcrypt.checkpw(password.encode('utf-8'), stored_hash.tobytes()):
-            return jsonify({'message': 'Login successful', 'user_id': user_id}),
+        if isinstance(stored_hash, str):
+            stored_hash = stored_hash.encode('utf-8')
+        if bcrypt.checkpw(password.encode('utf-8'), stored_hash):
+            return jsonify({'message': 'Login successful', 'user_id': user_id}), 200
         else:
             return jsonify({'error': 'Invalid username or password'}), 401
     except Exception as e:

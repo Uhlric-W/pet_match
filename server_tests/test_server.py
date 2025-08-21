@@ -29,25 +29,30 @@ def reset_table(table_name):
 
 class ServerTests(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(self):
             for table in TABLES_TO_RESET:
                 reset_table(table)
             print("Tables have been cleared")
     def setUp(cls):
         cls.test_user = {
             "username": "testuser",
-            "email": "uhlricwymer@gmail.com",
+            "email": "testuser@gmail.com",
             "password": "MySecurePassword123"
         }
         cls.verification_token = None
+        cls.login_user = {
+            "username": "loginUser",
+            "email": "loginUser@gmail.com",
+            "password": "MySecurePassword123"
+        }
         cls.test_user1 = {
             "username": "",
-            "email": "uhlricwymer@gmail.com",
+            "email": "testuser@gmail.com",
             "password": "MySecurePassword123"
         }
         cls.test_user2 = {
             "username": "testuser2",
-            "email": "uhlricwymer@gmail.com",
+            "email": "testuser@gmail.com",
             "password": ""
         }
         cls.test_user3 = {
@@ -57,7 +62,7 @@ class ServerTests(unittest.TestCase):
         }
         cls.test_user4a = {
             "username": "testuser4",
-            "email": "wymer008@umn.edu",
+            "email": "othertestuser@gmail.com",
             "password": "MySecurePassword123" 
         }
         cls.test_user4b = {
@@ -67,8 +72,36 @@ class ServerTests(unittest.TestCase):
         }
         cls.test_user4c = {
             "username": "testuser4c",
-            "email": "wymer008@umn.edu",
+            "email": "othertestuser@gmail.com",
             "password": "MySecurePassword"
+        }
+        cls.login_test1 = {
+            "username": "testuser",
+            "password": "MySecurePassword123"
+        }
+        cls.login_test2 = {
+            "username": "notauser",
+            "password": "MySecurePassword123"
+        }
+        cls.login_test3 = {
+            "username": "testuser",
+            "password": "not_a_password"
+        }
+        cls.login_test4 = {
+            "username": "",
+            "password": "MySecurePassword123"
+        }
+        cls.login_test5 = {
+            "username": "testuser",
+            "password": ""
+        }
+        cls.login_test6 = {
+            "username": "",
+            "password": ""
+        }
+        cls.login_test7 = {
+            "username": "wrong_user",
+            "password": "wrong_password"
         }
     
     def test_1_create_account(self):
@@ -153,7 +186,78 @@ class ServerTests(unittest.TestCase):
         data = response.json()
         self.assertIn('error', data)
         print("Caught double duplicate")
-        
+
+    def test_9_correct_login(self):
+        response = requests.post(f"{BASE_URL}/create_account", json=self.login_user)
+        if response.status_code != 201 and response.status_code != 409:
+            self.skipTest(f"Test skipped due to failure of account creation")
+        response = requests.post(f"{BASE_URL}/login", json=self.login_test1)
+        print(response)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("user_id", data)
+        self.assertIn("message", data)
+        print("login response:", data)
+
+    def test_10_incorrect_username(self):
+        response = requests.post(f"{BASE_URL}/create_account", json=self.login_user)
+        if response.status_code != 201 and response.status_code != 409:
+            self.skipTest(f"Test skipped due to failure of account creation")
+        response = requests.post(f"{BASE_URL}/login", json=self.login_test2)
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn('error', data)
+        print("Caught incorrect username")
+    
+    def test_11_incorrect_password(self):
+        response = requests.post(f"{BASE_URL}/create_account", json=self.login_user)
+        if response.status_code != 201 and response.status_code != 409:
+            self.skipTest(f"Test skipped due to failure of account creation")
+        response = requests.post(f"{BASE_URL}/login", json=self.login_test3)
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn('error', data)
+        print("Caught incorrect password")
+    
+    def test_12_missing_username(self):
+        response = requests.post(f"{BASE_URL}/create_account",json=self.login_user)
+        if response.status_code != 201 and response.status_code != 409:
+            self.skipTest(f"Test skipped due to failure of account creation")
+        response = requests.post(f"{BASE_URL}/login", json=self.login_test4)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('error', data)
+        print("Caught empty username, login")
+    
+    def test_13_missing_password(self):
+        response = requests.post(f"{BASE_URL}/create_account", json=self.login_user)
+        if response.status_code != 201 and response.status_code != 409:
+            self.skipTest(f"Test skipped due to failure of account creation")
+        response = requests.post(f"{BASE_URL}/login", json=self.login_test5)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('error', data)
+        print("Caught empty password, login")
+    
+    def test_14_missing_both(self):
+        response = requests.post(f"{BASE_URL}/create_account",json=self.login_user)
+        if response.status_code != 201 and response.status_code != 409:
+            self.skipTest(f"Test skipped due to failure of account creation")
+        response = requests.post(f"{BASE_URL}/login", json=self.login_test6)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('error', data)
+        print("Caught double empty login")
+    
+    def test_15_double_incorrect(self):
+        response = requests.post(f"{BASE_URL}/create_account", json=self.login_user)
+        if response.status_code != 201 and response.status_code != 409:
+            self.skipTest(f"Test skipped due to failure of account creation")
+        response = requests.post(f"{BASE_URL}/login", json=self.login_test7)
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn('error', data)
+        print("Caught double incorrect fields")
 
 if __name__ == "__main__":
     unittest.main()
