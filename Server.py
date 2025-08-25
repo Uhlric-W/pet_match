@@ -1,11 +1,11 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template_string, send_from_directory, abort
 import psycopg2
 import bcrypt
-from flask_mail import Mail, Message
+# from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", template_folder="html")
 
 DB_CONFIG = {
     'dbname': 'pet_app',
@@ -15,23 +15,16 @@ DB_CONFIG = {
     'port': 5432
 }
 
-"""app.config.update(
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=587,
-    MAIL_USE_TLS=True,
-    MAIL_USERNAME='',
-    MAIL_PASSWORD= '',
-    MAIL_DEFAULT_SENDER=''
-)"""
 
 SERIAL_KEY = os.environ.get("SERIAL_KEY", "dev-secret-key")
 
-mail = Mail(app)
+
 serializer = URLSafeTimedSerializer(SERIAL_KEY)
 
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
 
+# backend logic for creating an account requires a username, password, and email
 @app.route('/create_account', methods=['POST'])
 def create_account():
     # retrieves account creation request information
@@ -80,7 +73,9 @@ def create_account():
     except Exception as e:
         print(str(e))
         return jsonify({'error': str(e)}), 500
-    
+
+# backend functionality for logging in requires username and password
+# TODO: alter it to allow for email or username rather than just username
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -108,6 +103,16 @@ def login():
         print("Login error:", str(e))
         return jsonify({'error': str(e)}), 500
 
+
+LEGAL_PATH = os.path.join(app.root_path, "frontend")
+
+@app.route("/", defaults={"path": "login.html"})
+@app.route("/<path:filename>")
+def serve_legal_files(filename):
+    file_path = os.path.join(LEGAL_PATH, filename)
+    if not os.path.isfile(file_path):
+        abort(404) # 
+    return send_from_directory(LEGAL_PATH, path)
 """@app.route('/verify_email/<token>', methods=['GET'])
 def verify_email(token):
     try:
