@@ -2,15 +2,16 @@ from flask import Flask, send_from_directory, abort
 import os
 from backend.routes.auth_routes import auth_bp
 from backend.routes.user_routes import user_bp
-from backend.db import close_db
+from backend.db import close_connection
 
 app = Flask(
     __name__,
-    static_folder="..frontend/src/static"
+    static_folder="../frontend/src/static"
 )
 
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
 app.register_blueprint(user_bp, url_prefix="/api/users")
+app.teardown_appcontext(close_connection)
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "../frontend/src/static")
 

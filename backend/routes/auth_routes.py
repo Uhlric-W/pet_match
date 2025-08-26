@@ -15,7 +15,7 @@ auth_bp = Blueprint("auth", __name__)
     MAIL_DEFAULT_SENDER=''
 )"""
 
-SERIAL_KEY = os.environ.get("SERIAL_KEY", dev-secret-key)
+SERIAL_KEY = os.environ.get("SERIAL_KEY", "dev-secret-key")
 #mail = Mail(app)
 serializer = URLSafeSerializer(SERIAL_KEY)
 
@@ -26,7 +26,7 @@ def create_account():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
-    confirm_password = data.get(confirm_password)
+    confirm_password = data.get("confirm_password")
     email = data.get("email")
     # notifies that one of the required fields is empty
     if not (username and password and confirm_password and email):
@@ -54,8 +54,8 @@ def create_account():
         # adds the new user to the database
         cur.execute(
             """
-            INSERT INFO users (username, email, password_hash, verification_token, email_verified)
-            VALUES (%s %s %s %s %s), RETURNING id""", (username, email, pass_hash.decode("utf-8"), token, False),
+            INSERT INTO users (username, email, password_hash, verification_token, email_verified)
+            VALUES (%s, %s, %s, %s, %s) RETURNING id""", (username, email, pass_hash.decode("utf-8"), token, False),
         )
         # retrieves the user id for logging purposes
         user_id = cur.fetchone()[0]
@@ -78,7 +78,7 @@ def login():
     username_or_email = data.get("username_or_email")
     password = data.get("password")
     # checks to make sure neither of the required field are empty
-    if not (username_or_email and password):
+    if not ((username_or_email) and password):
         return jsonify({"error": "Missing required fields"}), 400
     # try statement to catch any errors that occur during runtime
     try:
@@ -87,7 +87,7 @@ def login():
         # creates a cursor object to interact with the database
         cur = conn.cursor()
         # checks to see if the user already exists in the database
-        cur.execute("SELECT user_id, password_hash FROM users WHERE username=%s or email=%s", (username_or_email, username_or_email))
+        cur.execute("SELECT id, password_hash FROM users WHERE username=%s or email=%s", (username_or_email, username_or_email))
         # stores the returned query from the database
         user = cur.fetchone()
         # closes connection as the user information has been retrieved
@@ -104,7 +104,7 @@ def login():
             stored_hash = stored_hash.encode("utf-8")
         # checks to see if the hashes match
         if bcrypt.checkpw(password.encode("utf-8"), stored_hash):
-            return jsonify({"message": "Logged in successfully", "user_id": user_id}), 201
+            return jsonify({"message": "Logged in successfully", "user_id": user_id}), 200
         # notifies the user that the credentials were incorrect with the same error as before for security purposes
         else:
             return jsonify({"error": "Invalid username or password"}), 401

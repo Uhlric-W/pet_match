@@ -1,6 +1,6 @@
 import psycopg2
 import psycopg2.extras
-from flask import g
+from flask import g, current_app
 
 # how the server logs into the database
 DB_CONFIG = {
@@ -20,11 +20,7 @@ def get_db():
     return g.db
 
 # the following function ensures that the database is shut down at the end of a request or if the app is closed
-@app.teardown_appcontext
-def close_db(exception):
-    # removes the current connection from the global database and returns it.
-    # if it doesn't exist then none is returned
-    db = g.pop("db", None)
-    # closes the connection if it exists
+def close_connection(exception = None):
+    db = getattr(g, "db", None)
     if db is not None:
         db.close()
