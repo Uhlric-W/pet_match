@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-import bcrypt
+import bcrypt # type: ignore
 from backend.db import get_db
 from itsdangerous import URLSafeSerializer
 import os
