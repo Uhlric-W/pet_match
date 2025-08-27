@@ -3,19 +3,24 @@
     <head>
         <meta charset="UTF-8">
         <title>Make Your Account</title>
-        <link rel="stylesheet" href="{{url_for('static', filename='css/account.css')}}">
+        <link rel="stylesheet" href="../static/css/create_account.css">
     </head>
     <body>
         <div class="form-container">
             <h2>Create Account</h2>
             <form id="signupForm">
                 <input type="text" id="username" placeholder="Username" required>
+                </br>
                 <input type="email" id="email" placeholder="Email" required>
+                </br>
                 <input type="password" id="password" placeholder="Password" required>
-                <input type="confirm-password" id="confirm-password" placeholder="Re-enter your password" required>
+                </br>
+                <input type="password" id="confirm_password" placeholder="Re-enter your password" required>
+                </br>
                 <button type="submit">Create Account</button>
             </form>
             <p id="signupMessage"></p>
+            <a href="/login.html">Login to an existing account</a>
         </div>
     </body>
 </html>

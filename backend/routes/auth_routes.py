@@ -44,7 +44,7 @@ def create_account():
         cur = conn.cursor()
         # checks to see if a user exists with the entered username and password.
         # if they do cancel account creation and notify the requester
-        cur.execute("SELECT * FROM users WHERE username=%s or email=%s", (username, email))
+        cur.execute("SELECT 1 FROM users WHERE username=%s or email=%s", (username, email))
         if cur.fetchone():
             return jsonify({"error": "Username or email already in use"}), 409
         # creates email verification token
@@ -62,6 +62,7 @@ def create_account():
         # closes the connection to the database
         conn.commit()
         cur.close()
+        conn.close()
         # logs the creation of the new account and the userid for the account and returns a code to notify of success
         return jsonify({"message": "Account created successfully", "user_id": user_id}), 201
     # when an error occurs it is logged to terminal and a 500 error code is returned
