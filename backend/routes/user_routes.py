@@ -10,7 +10,6 @@ def get_users():
         cur.execute("SELECT id, username, email, email_verified FROM users")
         rows = cur.fetchall()
         cur.close()
-
         users = [
             {
                 "id": r[0],
