@@ -1,0 +1,22 @@
+{
+  "name": "pet_match",
+  "version": "1.0.0",
+  "description": "Pet Match is a web application that allows users to create accounts, verify their email addresses, and interact with a pet-matching platform. The backend is built with Flask and PostgreSQL, and email verification is handled via Flask-Mail.",
+  "type": "module",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {},
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/frontend/tests/setup.js"]
+    }
+}

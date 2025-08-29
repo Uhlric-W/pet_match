@@ -1,13 +1,13 @@
 # Pet Match
 
-Pet Match is a web application that allows users to create accounts, verify their email addresses, and interact with a pet-matching platform. The backend is built with **Flask** and **PostgreSQL**, and email verification is handled via **Flask-Mail**.
+Pet Match is a web application that allows users to create accounts, verify their email addresses, and interact with a pet-matching platform. The backend is built with **Flask** and **PostgreSQL**, and email verification is handled via **Flask-Mail** note that the email verification has been temporarily removed.
 
 ---
 
 ## Features
 
 - User account creation with password hashing
-- Email verification for new accounts
+- Logging in to existing accounts
 - Database-driven backend using PostgreSQL
 
 ---
