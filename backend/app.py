@@ -4,10 +4,12 @@ from backend.routes.auth_routes import auth_bp
 from backend.routes.user_routes import user_bp
 from backend.db import close_connection
 
+Base_DIR = os.path.abspath(os.path.dirname(__file__))
+
 app = Flask(
     __name__,
-    static_folder="../frontend/src/static",
-    template_folder="../frontend/src/templates"
+    static_folder= os.path.join(Base_DIR, "..", "frontend", "src", "static"),
+    template_folder= os.path.join(Base_DIR, "..", "frontend", "src", "templates")
 )
 
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
@@ -22,9 +24,10 @@ def home():
     return render_template("login.html")
 
 # Renders html files for the pages
-@app.route("/page/<path:name>")
+@app.route("/<path:name>.html")
 def render_page(name):
     file_path = os.path.join(app.template_folder, f"{name}.html")
+    print(file_path)
     if not os.path.isfile(file_path):
         abort(404)
     return render_template(f"{name}.html")

@@ -19,7 +19,7 @@ export function setup_create_account_form() {
         const confirm_password = document.getElementById("confirm_password").value;
         if ( password !== confirm_password ) { 
             message.textContent = "Passwords do not match";
-            message.classList.remove("sucess");
+            message.classList.remove("success");
             message.classList.add("error");
             return;
         }

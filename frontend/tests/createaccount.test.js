@@ -108,4 +108,76 @@ describe("Create Account Form", () => {
         expect(message.classList.contains("success")).toBe(false);
     });
 
+    test("setup_create_account_form empty username", async () => {
+        document.body.innerHTML = `
+        <form id="signupForm">
+            <input type="text" id="username" value="">
+            <input type="email" id="email" value="testuser@gmail.com">
+            <input type="password" id="password" value="MySecurePassword123">
+            <input type="password" id="confirm_password" value="MySecurePassword123">
+            <button type="submit">Create Account</button>
+        </form>
+        <p id="signupMessage"></p>`;
+        setup_create_account_form();
+        const form = document.getElementById("signupForm");
+        form.dispatchEvent(new Event("submit"));
+        await new Promise(process.nextTick);
+        const message = document.getElementById("signupMessage");
+        expect(message.classList.contains("error")).toBe(true);
+        expect(message.classList.contains("success")).toBe(false);
+    });
+
+    test("setup_create_account_form empty email", async () => {
+        document.body.innerHTML = `
+        <form id="signupForm">
+            <input type="text" id="username" value="testuser">
+            <input type="email" id="email" value="testuser@gmail.com">
+            <input type="password" id="password" value="">
+            <input type="password" id="confirm_password" value="">
+            <button type="submit">Create Account</button>
+        </form>
+        <p id="signupMessage"></p>`;
+        setup_create_account_form();
+        const form = document.getElementById("signupForm");
+        form.dispatchEvent(new Event("submit"));
+        await new Promise(process.nextTick);
+        const message = document.getElementById("signupMessage");
+        expect(message.classList.contains("error")).toBe(true);
+        expect(message.classList.contains("success")).toBe(false);
+    });
+
+    test("setup_create_account_form duplicate username", async () => {
+        fetch.mockResolvedValueOnce({
+            json: () => Promise.resolve({ error: "Username or email already in use" }),
+        });
+        const form = document.getElementById("signupForm");
+        form.dispatchEvent(new Event("submit"));
+        await new Promise(process.nextTick);
+        const message = document.getElementById("signupMessage");
+        expect(message.textContent).toBe("Username or email already in use");
+        expect(message.classList.contains("error")).toBe(true);
+        expect(message.classList.contains("success")).toBe(false);
+    });
+
+    test("setup_create_account_form server error", async () => {
+        document.body.innerHTML = `
+            <form id="signupForm">
+            <input type="text" id="username" value="testuser">
+            <input type="email" id="email" value="testuser@gmail.com">
+            <input type="password" id="password" value="MySecurePassword123">
+            <input type="password" id="confirm_password" value="MySecurePassword123">
+            <button type="submit">Create Account</button>
+            </form>
+            <p id="signupMessage"></p>
+        `;
+        setup_create_account_form();
+        fetch.mockRejectedValueOnce(new Error("Server is down"));
+        const form = document.getElementById("signupForm");
+        form.dispatchEvent(new Event("submit"));
+        await new Promise(process.nextTick);
+        const message = document.getElementById("signupMessage");
+        expect(message.textContent).toBe("Server error, please try again later");
+        expect(message.classList.contains("error")).toBe(true);
+        expect(message.classList.contains("success")).toBe(false);
+    });
 });
