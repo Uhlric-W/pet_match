@@ -1,7 +1,7 @@
 export async function send_new_account_info(account_info) {
     const response = await fetch("/create_account", {
         method: "POST",
-        headers: { "Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(account_info),
     });
     return response.json();
